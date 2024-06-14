@@ -1,9 +1,11 @@
 using BookStore.DependencyInjection;
+using BookStore.Helper;
 using BookStore.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +46,7 @@ builder.Services.AddSwaggerGen(option =>
 builder.Services.AddDatabase();
 builder.Services.addUnitOfWork();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-/*builder.Services.AddAutoMapper(typeof(AutoMapperProfile));*/
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
