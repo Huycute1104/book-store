@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BookStore.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Repository.Models;
 using Repository.UnitOfwork;
 using System;
@@ -77,26 +78,39 @@ namespace BookStore.Controllers
         {
             try
             {
-                var Cate = _unitOfWork.CategoryRepo.Get().LastOrDefault();
-                if (Cate == null)
+                if (!ModelState.IsValid)
                 {
-                    return BadRequest("Category Not Found.");
+                    return BadRequest(ModelState);
                 }
-                var create = _mapper.Map<Category>(categoryDto);
-                create.CategoryId = Cate.CategoryId + 1;
 
-                _unitOfWork.CategoryRepo.Add(create);
+                // Check if a category with the same name already exists
+                var existingCategory = _unitOfWork.CategoryRepo
+                    .Get(c => c.CategoryName.ToLower() == categoryDto.Name.ToLower())
+                    .FirstOrDefault();
 
+                if (existingCategory != null)
+                {
+                    return Ok(new { message = "Category already exists" });
+                }
 
-                var productDto = _mapper.Map<CategoryMapper>(create);
+                // Map the DTO to the Category entity
+                var newCategory = _mapper.Map<Category>(categoryDto);
 
-                return Ok(productDto);
+                // Add the new category to the repository and save changes
+                _unitOfWork.CategoryRepo.Add(newCategory);
+                _unitOfWork.Save();
+
+                // Map the newly created category to a DTO to return in the response
+                var categoryDtoResponse = _mapper.Map<CategoryMapper>(newCategory);
+
+                return CreatedAtAction(nameof(GetCategoryById), new { id = categoryDtoResponse.Id }, categoryDtoResponse);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
 
         [HttpPut("{id}")]
         public IActionResult UpdateResult(int id, CreateCategoryMapper model)
