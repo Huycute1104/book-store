@@ -1,10 +1,12 @@
-﻿namespace BookStore.Model
+﻿using Repository.Models;
+
+namespace BookStore.Model
 {
     public class BookMapper
     {
         public BookMapper() { }
 
-        public BookMapper(int id, string name, string description, decimal unitPrice, int unitsInStock, double discount, int categoryId)
+        public BookMapper(int id, string name, string description, decimal unitPrice, int unitsInStock, double discount, Category category)
         {
             Id = id;
             Name = name;
@@ -12,7 +14,7 @@
             UnitPrice = unitPrice;
             UnitsInStock = unitsInStock;
             Discount = discount;
-            CategoryId = categoryId;
+            this.Category = category;
         }
 
         public int Id { get; set; }
@@ -22,7 +24,7 @@
         public int UnitsInStock { get; set; }
         public double Discount { get; set; }
 
-        public int CategoryId { get; set; } 
+        public Category Category {  get; set; } 
         
     }
 }
