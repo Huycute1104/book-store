@@ -20,7 +20,7 @@ namespace BookStore.Controllers
         public CategoriesController(IUnitOfwork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
+            _mapper = mapper;   
         }
 
         [HttpGet]
@@ -53,6 +53,7 @@ namespace BookStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet("{id}")]
         public IActionResult GetCategoryById(int id)
         {
@@ -83,7 +84,6 @@ namespace BookStore.Controllers
                     return BadRequest(ModelState);
                 }
 
-                // Check if a category with the same name already exists
                 var existingCategory = _unitOfWork.CategoryRepo
                     .Get(c => c.CategoryName.ToLower() == categoryDto.Name.ToLower())
                     .FirstOrDefault();
@@ -93,14 +93,11 @@ namespace BookStore.Controllers
                     return Ok(new { message = "Category already exists" });
                 }
 
-                // Map the DTO to the Category entity
                 var newCategory = _mapper.Map<Category>(categoryDto);
 
-                // Add the new category to the repository and save changes
                 _unitOfWork.CategoryRepo.Add(newCategory);
                 _unitOfWork.Save();
 
-                // Map the newly created category to a DTO to return in the response
                 var categoryDtoResponse = _mapper.Map<CategoryMapper>(newCategory);
 
                 return CreatedAtAction(nameof(GetCategoryById), new { id = categoryDtoResponse.Id }, categoryDtoResponse);
