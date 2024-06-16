@@ -42,7 +42,7 @@ namespace BookStore.Controllers
 
                 var books = _unitOfWork.BookRepo.Get(
                     filter: filter,
-                    includeProperties: "Category",
+                    includeProperties: "Category,Images",
                     pageIndex: pageIndex,
                     pageSize: pageSize
                 );
@@ -62,15 +62,36 @@ namespace BookStore.Controllers
         {
             try
             {
-                Book books = _unitOfWork.BookRepo.GetById(id, includeProperties: "Category");
-                if (books == null)
+                Book book = _unitOfWork.BookRepo.GetById(id, includeProperties: "Category,Images");
+                if (book == null)
                 {
                     return NotFound(new { message = "Book Not Found" });
                 }
 
-                var bookDto = _mapper.Map<BookDto>(books);
+                var bookDto = _mapper.Map<BookDto>(book);
 
                 return Ok(bookDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult CreateBook([FromBody] BookMapper bookMapper)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // Code to create a book...
+                // (This part is incomplete in the provided code)
+
+                return Ok();
             }
             catch (Exception ex)
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Repository.Models
 {
@@ -8,6 +9,7 @@ namespace Repository.Models
         public Book()
         {
             Carts = new HashSet<Cart>();
+            Images = new HashSet<Image>();
             OrderDetails = new HashSet<OrderDetail>();
         }
 
@@ -21,6 +23,7 @@ namespace Repository.Models
 
         public virtual Category? Category { get; set; }
         public virtual ICollection<Cart> Carts { get; set; }
+        public virtual ICollection<Image> Images { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
     }
 }

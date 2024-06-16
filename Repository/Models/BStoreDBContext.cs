@@ -19,6 +19,7 @@ namespace Repository.Models
         public virtual DbSet<Book> Books { get; set; } = null!;
         public virtual DbSet<Cart> Carts { get; set; } = null!;
         public virtual DbSet<Category> Categories { get; set; } = null!;
+        public virtual DbSet<Image> Images { get; set; } = null!;
         public virtual DbSet<Order> Orders { get; set; } = null!;
         public virtual DbSet<OrderDetail> OrderDetails { get; set; } = null!;
         public virtual DbSet<Role> Roles { get; set; } = null!;
@@ -82,6 +83,19 @@ namespace Repository.Models
                 entity.Property(e => e.CategoryId).ValueGeneratedNever();
 
                 entity.Property(e => e.CategoryName).HasMaxLength(30);
+            });
+
+            modelBuilder.Entity<Image>(entity =>
+            {
+                entity.Property(e => e.ImageId).ValueGeneratedNever();
+
+                entity.Property(e => e.Url).HasMaxLength(100);
+
+                entity.HasOne(d => d.Book)
+                    .WithMany(p => p.Images)
+                    .HasForeignKey(d => d.BookId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK__Images__BookId__44FF419A");
             });
 
             modelBuilder.Entity<Order>(entity =>

@@ -18,7 +18,7 @@ namespace BookStore.Helper
                 .ReverseMap();
             CreateMap<Book,BookMapper>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.BookId))
-                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category))
+                .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.Category))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.BookName))
                 .ForMember(dest => dest.Discount, opt => opt.MapFrom(src => src.Discount))
                 .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.UnitPrice))
@@ -29,6 +29,7 @@ namespace BookStore.Helper
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.BookId))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.BookName));
             CreateMap<Category, CategoryDto>();
+            CreateMap<Image, ImageDto>();
         }
 
     }

@@ -6,7 +6,7 @@ namespace BookStore.Model
     {
         public BookMapper() { }
 
-        public BookMapper(int id, string name, string description, decimal unitPrice, int unitsInStock, double discount, Category category)
+        public BookMapper(int id, string name, string description, decimal unitPrice, int unitsInStock, double discount, int categoryId)
         {
             Id = id;
             Name = name;
@@ -14,7 +14,7 @@ namespace BookStore.Model
             UnitPrice = unitPrice;
             UnitsInStock = unitsInStock;
             Discount = discount;
-            this.Category = category;
+            CategoryId = categoryId;
         }
 
         public int Id { get; set; }
@@ -24,7 +24,7 @@ namespace BookStore.Model
         public int UnitsInStock { get; set; }
         public double Discount { get; set; }
 
-        public Category Category {  get; set; } 
+        public int CategoryId {  get; set; } 
         
     }
 }

@@ -9,5 +9,6 @@
         public int UnitsInStock { get; set; }
         public double Discount { get; set; }
         public CategoryDto Category { get; set; }
+        public List<ImageDto> Images { get; set; }
     }
 }
