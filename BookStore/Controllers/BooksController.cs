@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookStore.Model;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Models;
 using Repository.UnitOfwork;
@@ -16,11 +17,13 @@ namespace BookStore.Controllers
     {
         private readonly IUnitOfwork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly Cloudinary _cloudinary;
 
-        public BooksController(IUnitOfwork unitOfWork, IMapper mapper)
+        public BooksController(IUnitOfwork unitOfWork, IMapper mapper, Cloudinary cloudinary)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cloudinary = cloudinary;
         }
 
         [HttpGet]
