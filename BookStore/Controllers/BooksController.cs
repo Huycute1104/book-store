@@ -56,5 +56,26 @@ namespace BookStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("{id}")]
+        public IActionResult GetBookById(int id)
+        {
+            try
+            {
+                Book books = _unitOfWork.BookRepo.GetById(id, includeProperties: "Category");
+                if (books == null)
+                {
+                    return NotFound(new { message = "Book Not Found" });
+                }
+
+                var bookDto = _mapper.Map<BookDto>(books);
+
+                return Ok(bookDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

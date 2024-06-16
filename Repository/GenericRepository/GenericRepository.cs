@@ -80,5 +80,34 @@ namespace Repository.GenericRepository
             dbSet.Update(item);
             dbContext.SaveChanges();
         }
+
+        public T GetById(int id, string includeProperties = "")
+        {
+            IQueryable<T> query = dbSet;
+
+            foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            var entityType = dbContext.Model.FindEntityType(typeof(T));
+            var primaryKey = entityType.FindPrimaryKey().Properties.FirstOrDefault();
+
+            if (primaryKey == null)
+            {
+                throw new InvalidOperationException($"Entity '{typeof(T).Name}' does not have a primary key defined.");
+            }
+
+            var parameter = Expression.Parameter(typeof(T), "e");
+            var property = Expression.Property(parameter, primaryKey.Name);
+            var constant = Expression.Constant(id);
+            var equality = Expression.Equal(property, constant);
+            var lambda = Expression.Lambda<Func<T, bool>>(equality, parameter);
+
+            return query.FirstOrDefault(lambda);
+        }
+
+
+
     }
 }

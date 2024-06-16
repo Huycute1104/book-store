@@ -19,5 +19,6 @@ namespace Repository.GenericRepository
         void Update(T item);
         void Delete(T item);
         T GetById(int id);
+        T GetById(int id, string includeProperties = "");
     }
 }
