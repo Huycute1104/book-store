@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookStore.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Models;
 using Repository.UnitOfwork;
@@ -9,6 +10,7 @@ namespace BookStore.Controllers
 {
     [Route("api/users")]
     [ApiController]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;
@@ -21,6 +23,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "Admin")]
         public IActionResult GetUsers(
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10,
@@ -52,6 +55,7 @@ namespace BookStore.Controllers
             }
         }
         [HttpPut("toggle/{id}")]
+        [Authorize(Policy = "Admin")]
         public IActionResult toggleUserStatus(int id)
         {
             try

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookStore.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Repository.Models;
@@ -12,6 +13,7 @@ namespace BookStore.Controllers
 {
     [Route("api/categories")]
     [ApiController]
+    [Authorize(Policy = "Admin")]
     public class CategoriesController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;

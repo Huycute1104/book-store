@@ -2,6 +2,7 @@
 using BookStore.Model;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Models;
@@ -15,6 +16,7 @@ namespace BookStore.Controllers
 {
     [Route("api/books")]
     [ApiController]
+    [Authorize(Policy = "Admin")]
     public class BooksController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;

@@ -25,13 +25,22 @@ namespace BookStore.Service
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                    new Claim(ClaimTypes.Name, user.Email)
+                    new Claim(ClaimTypes.Name, user.Email),
+                    new Claim(ClaimTypes.Role, user.Role?.RoleName ?? string.Empty)
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 Issuer = _configuration["Jwt:Issuer"],
                 Audience = _configuration["Jwt:Audience"],
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
+            if (user.RoleId == 1)  
+            {
+                tokenDescriptor.Subject.AddClaim(new Claim(ClaimTypes.Role, "Admin"));
+            }
+            else
+            {
+                tokenDescriptor.Subject.AddClaim(new Claim(ClaimTypes.Role, "Customer"));
+            }
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
