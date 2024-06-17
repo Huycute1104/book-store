@@ -28,6 +28,7 @@ namespace BookStore.Controllers
             _cloudinary = cloudinary;
         }
 
+
         [HttpGet]
         public IActionResult GetBooks(
             [FromQuery] int pageIndex = 1,
@@ -130,7 +131,6 @@ namespace BookStore.Controllers
                 _unitOfWork.BookRepo.Add(bookEntity);
                 _unitOfWork.Save();
                 int categoryID = (int)bookEntity.CategoryId;
-                // Load the Category entity to ensure it is mapped correctly
                 var category = _unitOfWork.CategoryRepo.GetById(categoryID);
                 if (category == null)
                 {
@@ -143,6 +143,26 @@ namespace BookStore.Controllers
                 bookDto.Category = _mapper.Map<CategoryDto>(bookEntity.Category); // Ensure the category is mapped
 
                 return Ok(bookDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteBookById(int id)
+        {
+            try
+            {
+                Book book = _unitOfWork.BookRepo.GetById(id);
+                if (book == null)
+                {
+                    return NotFound(new { message = "Book Not Found" });
+                }
+
+                _unitOfWork.BookRepo.Delete(book);
+                return Ok(new { message = "Book deleted successfully" });
             }
             catch (Exception ex)
             {
