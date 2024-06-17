@@ -94,6 +94,17 @@ namespace BookStore.Controllers
                 }
 
                 var newCategory = _mapper.Map<Category>(categoryDto);
+                var lastCate = _unitOfWork.CategoryRepo.Get().LastOrDefault();
+                int cateID;
+                if (lastCate == null)
+                {
+                    cateID =0;
+                }
+                else
+                {
+                    cateID = lastCate.CategoryId;
+                }
+                newCategory.CategoryId = cateID+1;
 
                 _unitOfWork.CategoryRepo.Add(newCategory);
                 _unitOfWork.Save();

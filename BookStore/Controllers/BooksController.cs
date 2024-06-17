@@ -170,6 +170,86 @@ namespace BookStore.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public IActionResult UpdateBook(int id, [FromForm] BookMapper bookMapper)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest("Invalid data.");
+                }
+
+                var existingBook = _unitOfWork.BookRepo.GetById(id, includeProperties: "Category,Images");
+                if (existingBook == null)
+                {
+                    return NotFound(new { message = "Book Not Found" });
+                }
+
+                // Update book properties
+                existingBook.BookName = bookMapper.Name;
+                existingBook.Description = bookMapper.Description;
+                existingBook.UnitPrice = bookMapper.UnitPrice;
+                existingBook.UnitsInStock = bookMapper.UnitsInStock;
+                existingBook.Discount = bookMapper.Discount;
+                existingBook.CategoryId = bookMapper.CategoryId;
+
+                // Handle image uploads and updates
+                if (bookMapper.Images != null && bookMapper.Images.Count > 0)
+                {
+                    var imageUrls = new List<string>();
+                    foreach (var file in bookMapper.Images)
+                    {
+                        var uploadParams = new ImageUploadParams
+                        {
+                            File = new FileDescription(file.FileName, file.OpenReadStream())
+                        };
+
+                        var uploadResult = _cloudinary.Upload(uploadParams);
+                        if (uploadResult.Error != null)
+                        {
+                            throw new Exception(uploadResult.Error.Message);
+                        }
+
+                        imageUrls.Add(uploadResult.SecureUrl.AbsoluteUri);
+                    }
+
+                    // Clear existing images and add new ones
+                    existingBook.Images.Clear();
+                    int nextImageId = _unitOfWork.ImageRepo.Get().Any()
+                        ? _unitOfWork.ImageRepo.Get().Max(i => i.ImageId) + 1
+                        : 1;
+
+                    foreach (var imageUrl in imageUrls)
+                    {
+                        existingBook.Images.Add(new Image { ImageId = nextImageId++, Url = imageUrl });
+                    }
+                }
+
+                _unitOfWork.BookRepo.Update(existingBook);
+                _unitOfWork.Save();
+
+                // Ensure the category is loaded and mapped correctly
+                var category = _unitOfWork.CategoryRepo.GetById((int)existingBook.CategoryId);
+                if (category == null)
+                {
+                    return BadRequest("Invalid CategoryId.");
+                }
+                existingBook.Category = category;
+
+                var bookDto = _mapper.Map<BookDto>(existingBook);
+                bookDto.Images = _mapper.Map<List<ImageDto>>(existingBook.Images);
+                bookDto.Category = _mapper.Map<CategoryDto>(existingBook.Category);
+
+                return Ok(bookDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
 
 
 
