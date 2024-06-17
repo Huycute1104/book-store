@@ -61,6 +61,11 @@ namespace BookStore.Helper
 
             CreateMap<Role, RoleDto>();
 
+            CreateMap<User, UpdateUserMapper>()
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ReverseMap();
+
 
 
         }

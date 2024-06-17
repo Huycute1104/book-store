@@ -54,6 +54,27 @@ namespace BookStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet("{id}")]
+        public IActionResult GetUserById(int id)
+        {
+            try
+            {
+                User user = _unitOfWork.UserRepo.GetById(id, includeProperties: "Role");
+                if (user == null)
+                {
+                    return NotFound(new { message = "User Not Found" });
+                }
+
+                var userDto = _mapper.Map<UserDto>(user);
+
+                return Ok(userDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPut("toggle/{id}")]
         [Authorize(Policy = "Admin")]
         public IActionResult toggleUserStatus(int id)
@@ -78,6 +99,33 @@ namespace BookStore.Controllers
                 _unitOfWork.UserRepo.Update(user);
 
                 return Ok(new { message = "Successful" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPut("{id}")]
+        [Authorize(Policy = "Customer")]
+        public IActionResult UpdateUserInfo(int id,UpdateUserMapper userMapper)
+        {
+            try
+            {
+                User user = _unitOfWork.UserRepo.GetById(id);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User Not Found" });
+                }
+                
+                user.Address = userMapper.Address;
+                user.Phone = userMapper.Phone;
+
+
+                _unitOfWork.UserRepo.Update(user);
+
+                var userDto = _mapper.Map<UserMapper>(user);
+
+                return Ok(userDto);
             }
             catch (Exception ex)
             {
