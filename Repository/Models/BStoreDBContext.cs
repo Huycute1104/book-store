@@ -63,6 +63,9 @@ namespace Repository.Models
                 entity.ToTable("Cart");
 
                 entity.Property(e => e.CartId).ValueGeneratedNever();
+                entity.Property(e => e.Quantity)
+                    .HasColumnType("int")
+                    .IsRequired();
 
                 entity.HasOne(d => d.Book)
                     .WithMany(p => p.Carts)
@@ -121,6 +124,12 @@ namespace Repository.Models
                     .HasName("PK__OrderDet__A04E57EF1E922D23");
 
                 entity.ToTable("OrderDetail");
+                entity.Property(e => e.Quantity)
+                    .HasColumnType("int")
+                    .IsRequired();
+                entity.Property(e => e.Discount)
+                    .HasColumnType("double")
+                    .IsRequired();
 
                 entity.Property(e => e.UnitPrice).HasColumnType("money");
 
