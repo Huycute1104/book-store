@@ -11,11 +11,11 @@ namespace BookStore.DependencyInjection
             services.AddDbContext<BStoreDBContext>(options => options.UseSqlServer(getConnection()));
             return services;
         }
-        /*     public static IServiceCollection AddAutoMapper(this IServiceCollection services)
+        public static IServiceCollection AddAutoMapper(this IServiceCollection services)
         {
             services.AddAutoMapper();
             return services;
-        }*/
+        }
         public static IServiceCollection addUnitOfWork(this IServiceCollection services)
         {
             services.AddScoped<IUnitOfwork, UnitOfwork>();

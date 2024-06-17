@@ -18,6 +18,7 @@ namespace Repository.UnitOfwork
         private IGenericRepository<OrderDetail> orderDetailRepo;
         private IGenericRepository<Role> roleRepo;
         private IGenericRepository<Cart> cartRepo;
+        private IGenericRepository<Image> imageRepo;
         private readonly BStoreDBContext context;
         private bool dispose = false;
 
@@ -118,6 +119,20 @@ namespace Repository.UnitOfwork
 
             }
             set => throw new NotImplementedException();
+        }
+
+        public IGenericRepository<Image> ImageRepo
+        {
+            get
+            {
+                if (imageRepo == null)
+                {
+                    imageRepo = new GenericRepository<Image>(context);
+                }
+                return imageRepo;
+
+            }
+            set => throw new NotImplementedException(); 
         }
 
         protected virtual void Dispose(bool dispose)

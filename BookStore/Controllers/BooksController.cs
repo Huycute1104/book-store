@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using BookStore.Model;
 using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Models;
 using Repository.UnitOfwork;
@@ -82,24 +84,80 @@ namespace BookStore.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateBook([FromBody] BookMapper bookMapper)
+        public IActionResult CreateBook([FromForm] BookMapper bookMapper)
         {
             try
             {
-                if (!ModelState.IsValid)
+                if (!ModelState.IsValid || bookMapper.Images == null || bookMapper.Images.Count == 0)
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest("Invalid data or no images provided.");
                 }
 
-                // Code to create a book...
-                // (This part is incomplete in the provided code)
+                var imageUrls = new List<string>();
+                foreach (var file in bookMapper.Images)
+                {
+                    var uploadParams = new ImageUploadParams
+                    {
+                        File = new FileDescription(file.FileName, file.OpenReadStream())
+                    };
 
-                return Ok();
+                    var uploadResult = _cloudinary.Upload(uploadParams);
+                    if (uploadResult.Error != null)
+                    {
+                        throw new Exception(uploadResult.Error.Message);
+                    }
+
+                    imageUrls.Add(uploadResult.SecureUrl.AbsoluteUri);
+                }
+
+                var bookEntity = _mapper.Map<Book>(bookMapper);
+
+                bookEntity.CategoryId = bookMapper.CategoryId;
+                bookEntity.Images = new List<Image>();
+
+                int nextImageId = _unitOfWork.ImageRepo.Get().Any()
+                    ? _unitOfWork.ImageRepo.Get().Max(i => i.ImageId) + 1
+                    : 1;
+
+                foreach (var imageUrl in imageUrls)
+                {
+                    bookEntity.Images.Add(new Image { ImageId = nextImageId++, Url = imageUrl });
+                }
+
+                var lastBook = _unitOfWork.BookRepo.Get().LastOrDefault();
+                bookEntity.BookId = (lastBook?.BookId ?? 0) + 1;
+
+                _unitOfWork.BookRepo.Add(bookEntity);
+                _unitOfWork.Save();
+                int categoryID = (int)bookEntity.CategoryId;
+                // Load the Category entity to ensure it is mapped correctly
+                var category = _unitOfWork.CategoryRepo.GetById(categoryID);
+                if (category == null)
+                {
+                    return BadRequest("Invalid CategoryId.");
+                }
+                bookEntity.Category = category;
+
+                var bookDto = _mapper.Map<BookDto>(bookEntity);
+                bookDto.Images = _mapper.Map<List<ImageDto>>(bookEntity.Images);
+                bookDto.Category = _mapper.Map<CategoryDto>(bookEntity.Category); // Ensure the category is mapped
+
+                return Ok(bookDto);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
+
+
+
+
+
+
+
+
+
     }
 }
