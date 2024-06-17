@@ -40,6 +40,29 @@ namespace BookStore.Helper
             CreateMap<Category, CreateCategoryMapper>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CategoryName))
                 .ReverseMap();
+
+   
+            CreateMap<User, UserDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.UserStatus, opt => opt.MapFrom(src => src.UserStatus))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
+
+            CreateMap<User, UserMapper>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.UserStatus, opt => opt.MapFrom(src => src.UserStatus))
+                .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RoleId))
+                .ReverseMap();
+
+            CreateMap<Role, RoleDto>();
+
+
+
         }
     }
 }
