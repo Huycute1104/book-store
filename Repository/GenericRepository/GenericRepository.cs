@@ -111,9 +111,19 @@ namespace Repository.GenericRepository
             return dbContext.Set<T>().FirstOrDefault(predicate);
         }
 
+        public IEnumerable<T> FindAll(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        {
+            IQueryable<T> query = dbSet;
 
+            if (!string.IsNullOrEmpty(includeProperties))
+            {
+                foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty);
+                }
+            }
 
-
-
+            return query.Where(predicate).ToList();
+        }
     }
 }

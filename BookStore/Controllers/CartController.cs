@@ -19,6 +19,22 @@ namespace BookStore.Controllers
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
+
+        [HttpGet("customers/{id}")]
+        public IActionResult ViewCart(int id)
+        {
+            var user = _unitOfWork.UserRepo.GetById(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var cartItems = _unitOfWork.CartRepo.FindAll(c => c.UsersId == id, includeProperties: "Book.Images");
+            var cartItemDtos = _mapper.Map<List<CartItemResponseDto>>(cartItems);
+
+            return Ok(cartItemDtos);
+        }
+
         [HttpPost]
         public IActionResult AddToCart([FromBody] CartItemDto cartItemDto)
         {

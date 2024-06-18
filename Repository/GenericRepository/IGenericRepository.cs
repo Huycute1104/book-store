@@ -16,6 +16,7 @@ namespace Repository.GenericRepository
                 int? pageIndex = null,
                 int? pageSize = null);
         T Find(Expression<Func<T, bool>> predicate);
+        IEnumerable<T> FindAll(Expression<Func<T, bool>> predicate, string includeProperties = "");
         void Add(T item);
         void Update(T item);
         void Delete(T item);

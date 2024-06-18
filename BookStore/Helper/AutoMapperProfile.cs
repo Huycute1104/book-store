@@ -66,7 +66,14 @@ namespace BookStore.Helper
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
                 .ReverseMap();
 
+            CreateMap<Cart, CartItemResponseDto>()
+            .ForMember(dest => dest.BookName, opt => opt.MapFrom(src => src.Book.BookName))
+            .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.Book.UnitPrice))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Book.Description))
+            .ForMember(dest => dest.Discount, opt => opt.MapFrom(src => src.Book.Discount))
+            .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Book.Images));
 
+            CreateMap<Image, ImageResponseDto>();
 
         }
     }
