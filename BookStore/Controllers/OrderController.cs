@@ -20,7 +20,38 @@ namespace BookStore.Controllers
             _mapper = mapper;
         }
 
-        public class OrderQueryParameters
+        [HttpGet("customer/{customerId}")]
+        public IActionResult GetOrdersByUserId(int customerId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+            var ordersQuery = _unitOfWork.OrderRepo.Get(
+                filter: o => o.UserId == customerId,
+                orderBy: q => q.OrderBy(o => o.OrderId)
+            );
+
+            var totalCount = ordersQuery.Count();
+
+            var orders = ordersQuery
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var orderDtos = _mapper.Map<List<OrderDto>>(orders);
+
+            foreach (var orderDto in orderDtos)
+            {
+                var orderDetails = _unitOfWork.OrderDetailRepo.FindAll(
+                    od => od.OrderId == orderDto.OrderId,
+                    includeProperties: "Book.Images"
+                );
+                orderDto.OrderDetails = _mapper.Map<List<OrderDetailDto>>(orderDetails);
+            }
+
+            var pagedResult = new PagedResult<OrderDto>(orderDtos, totalCount, pageIndex, pageSize);
+
+            return Ok(pagedResult);
+        }
+ 
+    public class OrderQueryParameters
         {
             public int pageIndex { get; set; } = 1;
             public int pageSize { get; set; } = 10;
@@ -72,6 +103,7 @@ namespace BookStore.Controllers
         }
     }
 
+
     public class PagedResult<T>
     {
         public int CurrentPage { get; set; }
@@ -89,4 +121,5 @@ namespace BookStore.Controllers
             Items = items;
         }
     }
+
 }
