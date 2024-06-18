@@ -110,6 +110,15 @@ namespace Repository.Models
                 entity.Property(e => e.OrderDate).HasColumnType("datetime");
 
                 entity.Property(e => e.Total).HasColumnType("money");
+                entity.Property(e => e.OrderStatus)
+                    .HasMaxLength(500)
+                    .IsUnicode(true);
+                entity.Property(e => e.CustomerName)
+                    .HasMaxLength(500)
+                    .IsUnicode(true);
+                entity.Property(e => e.CustomerPhone)
+                    .HasMaxLength(500)
+                    .IsUnicode(true);
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Orders)

@@ -75,6 +75,10 @@ namespace BookStore.Helper
 
             CreateMap<Image, ImageResponseDto>();
 
+            CreateMap<Order, OrderDto>();
+            CreateMap<OrderDetail, OrderDetailDto>();
+            CreateMap<Book, BookDto2>();
+            CreateMap<Image, ImageDto>();
         }
     }
 }

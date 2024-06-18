@@ -13,6 +13,9 @@ namespace Repository.Models
         public int OrderId { get; set; }
         public DateTime OrderDate { get; set; }
         public decimal? Total { get; set; }
+        public string OrderStatus { get; set; }
+        public string CustomerName { get; set; }
+        public string CustomerPhone { get; set; }
         public int? UserId { get; set; }
 
         public virtual User? User { get; set; }
