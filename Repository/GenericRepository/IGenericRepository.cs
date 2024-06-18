@@ -15,6 +15,7 @@ namespace Repository.GenericRepository
                 string includeProperties = "",
                 int? pageIndex = null,
                 int? pageSize = null);
+        T Find(Expression<Func<T, bool>> predicate);
         void Add(T item);
         void Update(T item);
         void Delete(T item);

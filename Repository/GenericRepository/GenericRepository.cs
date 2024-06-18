@@ -106,6 +106,11 @@ namespace Repository.GenericRepository
 
             return query.FirstOrDefault(lambda);
         }
+        public T Find(Expression<Func<T, bool>> predicate)
+        {
+            return dbContext.Set<T>().FirstOrDefault(predicate);
+        }
+
 
 
 
