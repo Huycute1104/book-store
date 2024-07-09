@@ -10,7 +10,7 @@ namespace BookStore.Controllers
 {
     [Route("api/users")]
     [ApiController]
-    [Authorize]
+/*    [Authorize]*/
     public class UsersController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;
@@ -23,7 +23,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "Admin")]
+/*        [Authorize(Policy = "Admin")]*/
         public IActionResult GetUsers(
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10,
@@ -76,7 +76,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPut("toggle/{id}")]
-        [Authorize(Policy = "Admin")]
+/*        [Authorize(Policy = "Admin")]*/
         public IActionResult toggleUserStatus(int id)
         {
             try
@@ -106,7 +106,7 @@ namespace BookStore.Controllers
             }
         }
         [HttpPut("{id}")]
-        [Authorize(Policy = "Customer")]
+/*        [Authorize(Policy = "Customer")]*/
         public IActionResult UpdateUserInfo(int id,UpdateUserMapper userMapper)
         {
             try

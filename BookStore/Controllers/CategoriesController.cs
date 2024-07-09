@@ -28,20 +28,11 @@ namespace BookStore.Controllers
         [HttpGet]
         public IActionResult GetCategories(
             [FromQuery] int pageIndex = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string? searchCategoryName = " ")
+            [FromQuery] int pageSize = 10)
         {
             try
             {
-                Expression<Func<Category, bool>> filter = null;
-
-                if (!string.IsNullOrEmpty(searchCategoryName))
-                {
-                    filter = p => p.CategoryName.Contains(searchCategoryName);
-                }
-
                 var categories = _unitOfWork.CategoryRepo.Get(
-                    filter: filter,
                     pageIndex: pageIndex,
                     pageSize: pageSize
                 );
@@ -55,6 +46,7 @@ namespace BookStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
 
         [HttpGet("{id}")]
         public IActionResult GetCategoryById(int id)
@@ -92,7 +84,7 @@ namespace BookStore.Controllers
 
                 if (existingCategory != null)
                 {
-                    return Ok(new { message = "Category already exists" });
+                    return BadRequest(new { message = "Category already exists" });
                 }
 
                 var newCategory = _mapper.Map<Category>(categoryDto);

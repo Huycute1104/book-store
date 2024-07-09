@@ -38,6 +38,7 @@ namespace BookStore.Controllers
                 user.Address,
                 user.Phone,
                 user.UserStatus,
+                user.RoleId
             };
             if(userInfo.UserStatus == false)
             {
