@@ -128,8 +128,8 @@ namespace BookStore.Controllers
 
                 _unitOfWork.CategoryRepo.Update(category);
 
-                CategoryMapper updatedProduct = _mapper.Map<CategoryMapper>(category);
-                return Ok(updatedProduct);
+                CategoryMapper updatedCategory = _mapper.Map<CategoryMapper>(category);
+                return Ok(new { message = "Category updated successfully", category = updatedCategory });
             }
             catch (Exception ex)
             {
