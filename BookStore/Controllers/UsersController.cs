@@ -10,7 +10,7 @@ namespace BookStore.Controllers
 {
     [Route("api/users")]
     [ApiController]
-/*    [Authorize]*/
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;
@@ -23,20 +23,12 @@ namespace BookStore.Controllers
         }
 
         [HttpGet]
-/*        [Authorize(Policy = "Admin")]*/
-        public IActionResult GetUsers(
-            [FromQuery] int pageIndex = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string? searchEmail = null)
+        [Authorize(Policy = "Admin")]
+        public IActionResult GetUsers([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                Expression<Func<User, bool>> filter = p => true; // Include all users by default
-
-                if (!string.IsNullOrEmpty(searchEmail) && !string.IsNullOrWhiteSpace(searchEmail))
-                {
-                    filter = p => p.Email.Contains(searchEmail);
-                }
+                Expression<Func<User, bool>> filter = p => p.Role.RoleName == "CUSTOMER"; 
 
                 var users = _unitOfWork.UserRepo.Get(
                     filter: filter,
@@ -54,6 +46,8 @@ namespace BookStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
         [HttpGet("{id}")]
         public IActionResult GetUserById(int id)
         {
@@ -76,7 +70,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPut("toggle/{id}")]
-/*        [Authorize(Policy = "Admin")]*/
+        [Authorize(Policy = "Admin")]
         public IActionResult toggleUserStatus(int id)
         {
             try
@@ -106,7 +100,7 @@ namespace BookStore.Controllers
             }
         }
         [HttpPut("{id}")]
-/*        [Authorize(Policy = "Customer")]*/
+        [Authorize(Policy = "Customer")]
         public IActionResult UpdateUserInfo(int id,UpdateUserMapper userMapper)
         {
             try

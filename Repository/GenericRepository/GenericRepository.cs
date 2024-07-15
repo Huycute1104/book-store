@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repository.GenericRepository
 {
@@ -14,30 +12,29 @@ namespace Repository.GenericRepository
         private readonly BStoreDBContext dbContext;
         private readonly DbSet<T> dbSet;
 
-        public GenericRepository(BStoreDBContext dBContext)
+        public GenericRepository(BStoreDBContext dbContext)
         {
-            this.dbContext = dBContext;
+            this.dbContext = dbContext;
             this.dbSet = dbContext.Set<T>();
-
-
         }
-        void IGenericRepository<T>.Add(T item)
+
+        public void Add(T item)
         {
             dbSet.Add(item);
             dbContext.SaveChanges();
         }
 
-        void IGenericRepository<T>.Delete(T item)
+        public void Delete(T item)
         {
             dbSet.Remove(item);
             dbContext.SaveChanges();
         }
 
         public IEnumerable<T> Get(
-            Expression<Func<T, bool>> filter = null, 
-            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, 
-            string includeProperties = "", 
-            int? pageIndex = null, 
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            string includeProperties = "",
+            int? pageIndex = null,
             int? pageSize = null)
         {
             IQueryable<T> query = dbSet;
@@ -47,8 +44,7 @@ namespace Repository.GenericRepository
                 query = query.Where(filter);
             }
 
-            foreach (var includeProperty in includeProperties.Split
-                (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 query = query.Include(includeProperty);
             }
@@ -69,13 +65,12 @@ namespace Repository.GenericRepository
             return query.ToList();
         }
 
-        T IGenericRepository<T>.GetById(int id)
+        public T GetById(int id)
         {
-            T item = dbSet.Find(id);
-            return item;
+            return dbSet.Find(id);
         }
 
-        void IGenericRepository<T>.Update(T item)
+        public void Update(T item)
         {
             dbSet.Update(item);
             dbContext.SaveChanges();
@@ -106,6 +101,7 @@ namespace Repository.GenericRepository
 
             return query.FirstOrDefault(lambda);
         }
+
         public T Find(Expression<Func<T, bool>> predicate)
         {
             return dbContext.Set<T>().FirstOrDefault(predicate);
@@ -125,5 +121,18 @@ namespace Repository.GenericRepository
 
             return query.Where(predicate).ToList();
         }
+
+        public int Count(Expression<Func<T, bool>> filter = null)
+        {
+            IQueryable<T> query = dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return query.Count();
+        }
+
     }
 }

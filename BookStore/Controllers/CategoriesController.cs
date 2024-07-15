@@ -39,7 +39,16 @@ namespace BookStore.Controllers
 
                 var categoryDtos = _mapper.Map<IEnumerable<CategoryMapper>>(categories);
 
-                return Ok(categoryDtos);
+                int totalCount = _unitOfWork.CategoryRepo.Count();
+                int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                var response = new
+                {
+                    TotalPages = totalPages,
+                    Categories = categoryDtos
+                };
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
