@@ -28,7 +28,7 @@ namespace BookStore.Controllers
         {
             try
             {
-                Expression<Func<User, bool>> filter = p => p.Role.RoleName == "CUSTOMER"; 
+                Expression<Func<User, bool>> filter = p => p.Role.RoleName == "CUSTOMER";
 
                 var users = _unitOfWork.UserRepo.Get(
                     filter: filter,
@@ -39,14 +39,23 @@ namespace BookStore.Controllers
 
                 var userDtos = _mapper.Map<IEnumerable<UserDto>>(users);
 
-                return Ok(userDtos);
+                int totalCount = _unitOfWork.UserRepo.Count(filter);
+                int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                var pagedResponse = new PagedResponse<UserDto>
+                {
+                    Data = userDtos,
+                    TotalPages = totalPages,
+                    TotalCount = totalCount
+                };
+
+                return Ok(pagedResponse);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
-
 
         [HttpGet("{id}")]
         public IActionResult GetUserById(int id)
@@ -71,7 +80,7 @@ namespace BookStore.Controllers
 
         [HttpPut("toggle/{id}")]
         [Authorize(Policy = "Admin")]
-        public IActionResult toggleUserStatus(int id)
+        public IActionResult ToggleUserStatus(int id)
         {
             try
             {
@@ -80,16 +89,8 @@ namespace BookStore.Controllers
                 {
                     return NotFound(new { message = "User Not Found" });
                 }
-                if (user.UserStatus == true)
-                {
-                    user.UserStatus = false;
-                }
-                else
-                {
-                    user.UserStatus = true;
-                }
-                
 
+                user.UserStatus = !user.UserStatus;
                 _unitOfWork.UserRepo.Update(user);
 
                 return Ok(new { message = "Successful" });
@@ -99,9 +100,10 @@ namespace BookStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpPut("{id}")]
         [Authorize(Policy = "Customer")]
-        public IActionResult UpdateUserInfo(int id,UpdateUserMapper userMapper)
+        public IActionResult UpdateUserInfo(int id, UpdateUserMapper userMapper)
         {
             try
             {
@@ -110,11 +112,9 @@ namespace BookStore.Controllers
                 {
                     return NotFound(new { message = "User Not Found" });
                 }
-                
+
                 user.Address = userMapper.Address;
                 user.Phone = userMapper.Phone;
-
-
                 _unitOfWork.UserRepo.Update(user);
 
                 var userDto = _mapper.Map<UserMapper>(user);
