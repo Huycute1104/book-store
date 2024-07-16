@@ -30,7 +30,6 @@ namespace BookStore.Controllers
             _cloudinary = cloudinary;
         }
 
-
         [HttpGet]
         public IActionResult GetBooks(
             [FromQuery] int pageIndex = 1,
@@ -55,9 +54,17 @@ namespace BookStore.Controllers
                     pageSize: pageSize
                 );
 
+                var totalCount = _unitOfWork.BookRepo.Count(filter);
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
                 var bookDtos = _mapper.Map<IEnumerable<BookDto>>(books);
 
-                return Ok(bookDtos);
+                return Ok(new
+                {
+                    data = bookDtos,
+                    totalPages,
+                    totalCount
+                });
             }
             catch (Exception ex)
             {
@@ -250,16 +257,5 @@ namespace BookStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-
-
-
-
-
-
-
-
-
-
     }
 }
