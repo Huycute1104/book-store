@@ -2,8 +2,12 @@
 using BookStore.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Models;
 using Repository.UnitOfwork;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace BookStore.Controllers
 {
@@ -50,11 +54,11 @@ namespace BookStore.Controllers
 
             return Ok(pagedResult);
         }
- 
-    public class OrderQueryParameters
+
+        public class OrderQueryParameters
         {
-            public int pageIndex { get; set; } = 1;
-            public int pageSize { get; set; } = 10;
+            public int PageIndex { get; set; } = 1;
+            public int PageSize { get; set; } = 10;
 
             public int? UserId { get; set; }
             public DateTime? StartDate { get; set; }
@@ -66,43 +70,33 @@ namespace BookStore.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAllOrders([FromQuery] OrderQueryParameters queryParameters)
+        public IActionResult GetOrders([FromQuery] OrderQueryParameters orderParameter)
         {
-            var ordersQuery = _unitOfWork.OrderRepo.Get(
-                filter: o => (!queryParameters.UserId.HasValue || o.UserId == queryParameters.UserId) &&
-                             (!queryParameters.StartDate.HasValue || o.OrderDate >= queryParameters.StartDate) &&
-                             (!queryParameters.EndDate.HasValue || o.OrderDate <= queryParameters.EndDate) &&
-                             (!queryParameters.MinPrice.HasValue || o.Total >= queryParameters.MinPrice) &&
-                             (!queryParameters.MaxPrice.HasValue || o.Total <= queryParameters.MaxPrice) &&
-                             (string.IsNullOrEmpty(queryParameters.CustomerPhone) || o.CustomerPhone.Contains(queryParameters.CustomerPhone)) &&
-                             (string.IsNullOrEmpty(queryParameters.CustomerName) || o.CustomerName.Contains(queryParameters.CustomerName)),
-                orderBy: q => q.OrderBy(o => o.OrderId)
-            );
+            Expression<Func<Order, bool>> filter = null;
 
-            var totalCount = ordersQuery.Count();
-
-            var orders = ordersQuery
-                .Skip((queryParameters.pageIndex - 1) * queryParameters.pageSize)
-                .Take(queryParameters.pageSize)
-                .ToList();
-
-            var orderDtos = _mapper.Map<List<OrderDto>>(orders);
-
-            foreach (var orderDto in orderDtos)
+            if (!string.IsNullOrEmpty(orderParameter.CustomerName) ||
+                orderParameter.StartDate.HasValue ||
+                orderParameter.EndDate.HasValue)
             {
-                var orderDetails = _unitOfWork.OrderDetailRepo.FindAll(
-                    od => od.OrderId == orderDto.OrderId,
-                    includeProperties: "Book.Images"
-                );
-                orderDto.OrderDetails = _mapper.Map<List<OrderDetailDto>>(orderDetails);
+                filter = o =>
+                    (string.IsNullOrEmpty(orderParameter.CustomerName) || o.CustomerName.Contains(orderParameter.CustomerName)) &&
+                    (!orderParameter.StartDate.HasValue || o.OrderDate >= orderParameter.StartDate.Value) &&
+                    (!orderParameter.EndDate.HasValue || o.OrderDate <= orderParameter.EndDate.Value);
             }
 
-            var pagedResult = new PagedResult<OrderDto>(orderDtos, totalCount, queryParameters.pageIndex, queryParameters.pageSize);
+            var orders = _unitOfWork.OrderRepo.Get(
+                filter: filter,
+                orderBy: q => q.OrderByDescending(o => o.OrderDate),
+                includeProperties: "OrderDetails,OrderDetails.Book",
+                pageIndex: orderParameter.PageIndex,
+                pageSize: orderParameter.PageSize
+            );
 
-            return Ok(pagedResult);
+            var ordersDto = _mapper.Map<IEnumerable<OrderDto>>(orders);
+
+            return Ok(ordersDto);
         }
     }
-
 
     public class PagedResult<T>
     {
@@ -121,5 +115,4 @@ namespace BookStore.Controllers
             Items = items;
         }
     }
-
 }

@@ -41,7 +41,7 @@ namespace BookStore.Helper
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CategoryName))
                 .ReverseMap();
 
-   
+
             CreateMap<User, UserDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
@@ -75,7 +75,14 @@ namespace BookStore.Helper
 
             CreateMap<Image, ImageResponseDto>();
 
-            CreateMap<Order, OrderDto>();
+
+
+            CreateMap<Order, OrderDto>()
+                .ForMember(dest => dest.OrderDetails, opt => opt.MapFrom(src => src.OrderDetails));
+            CreateMap<OrderDetail, OrderDetailDto>();
+            CreateMap<OrderDto, Order>()
+                .ForMember(dest => dest.OrderDetails, opt => opt.MapFrom(src => src.OrderDetails));
+            CreateMap<OrderDetailDto, OrderDetail>();
             CreateMap<OrderDetail, OrderDetailDto>();
             CreateMap<Book, BookDto2>();
             CreateMap<Image, ImageDto>();
