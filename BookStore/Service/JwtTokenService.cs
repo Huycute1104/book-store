@@ -24,7 +24,7 @@ namespace BookStore.Service
             if (user.RoleId == 1)
             {
                 role = "Admin";
-            }
+            }else
             {
                 role = "Customer";
             }
