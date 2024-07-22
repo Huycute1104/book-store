@@ -44,10 +44,10 @@ namespace Repository.Models
 
                 entity.Property(e => e.BookName)
                     .HasMaxLength(40)
-                    .IsUnicode(false);
+                    .IsUnicode();
                 entity.Property(e => e.Description)
                     .HasMaxLength(500)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.UnitPrice).HasColumnType("money");
 
