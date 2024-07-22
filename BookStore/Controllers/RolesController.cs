@@ -11,7 +11,7 @@ namespace BookStore.Controllers
 {
     [Route("api/roles")]
     [ApiController]
-    [Authorize(Policy = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class RolesController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;

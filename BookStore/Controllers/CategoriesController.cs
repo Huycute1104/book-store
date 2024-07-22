@@ -13,7 +13,7 @@ namespace BookStore.Controllers
 {
     [Route("api/categories")]
     [ApiController]
-    [Authorize(Policy = "Admin")]
+    [Authorize]
     public class CategoriesController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;
@@ -26,6 +26,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles ="Admin,Customer")]
         public IActionResult GetCategories(
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10)
@@ -58,6 +59,7 @@ namespace BookStore.Controllers
 
 
         [HttpGet("{id}")]
+        [Authorize(Roles ="Admin")]
         public IActionResult GetCategoryById(int id)
         {
             try
@@ -78,6 +80,7 @@ namespace BookStore.Controllers
             }
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public IActionResult CreateCategory([FromBody] CreateCategoryMapper categoryDto)
         {
             try
@@ -124,6 +127,7 @@ namespace BookStore.Controllers
 
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult UpdateResult(int id, CreateCategoryMapper model)
         {
             try
@@ -147,6 +151,7 @@ namespace BookStore.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult DeleteCategoryById(int id)
         {
             try

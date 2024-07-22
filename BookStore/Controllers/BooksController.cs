@@ -16,7 +16,7 @@ namespace BookStore.Controllers
 {
     [Route("api/books")]
     [ApiController]
-    [Authorize(Policy = "Admin")]
+    [Authorize]
     public class BooksController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;
@@ -31,6 +31,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles ="Admin,Customer")]
         public IActionResult GetBooks(
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10,
@@ -73,6 +74,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Customer")]
         public IActionResult GetBookById(int id)
         {
             try
@@ -94,6 +96,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public IActionResult CreateBook([FromForm] BookMapper bookMapper)
         {
             try
@@ -160,6 +163,7 @@ namespace BookStore.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult DeleteBookById(int id)
         {
             try
@@ -180,6 +184,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult UpdateBook(int id, [FromForm] BookMapper bookMapper)
         {
             try

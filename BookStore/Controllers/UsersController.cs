@@ -23,7 +23,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetUsers([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -58,6 +58,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Customer")]
         public IActionResult GetUserById(int id)
         {
             try
@@ -79,7 +80,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPut("toggle/{id}")]
-        [Authorize(Policy = "Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult ToggleUserStatus(int id)
         {
             try
@@ -102,7 +103,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy = "Customer")]
+        [Authorize(Roles = "Admin,Customer")]
         public IActionResult UpdateUserInfo(int id, UpdateUserMapper userMapper)
         {
             try

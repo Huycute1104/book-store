@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookStore.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Models;
@@ -9,6 +10,7 @@ namespace BookStore.Controllers
 {
     [Route("api/carts")]
     [ApiController]
+    [Authorize]
     public class CartController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;
@@ -21,6 +23,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet("customers/{id}")]
+        [Authorize(Roles ="Customer")]
         public IActionResult ViewCart(int id)
         {
             var user = _unitOfWork.UserRepo.GetById(id);
@@ -36,6 +39,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Customer")]
         public IActionResult AddToCart([FromBody] CartItemDto cartItemDto)
         {
             if (cartItemDto == null)
