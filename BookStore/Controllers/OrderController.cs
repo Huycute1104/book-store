@@ -63,6 +63,7 @@ namespace BookStore.Controllers
             public int? UserId { get; set; }
             public DateTime? StartDate { get; set; }
             public DateTime? EndDate { get; set; }
+            public DateTime? SpecificDate { get; set; }
             public decimal? MinPrice { get; set; }
             public decimal? MaxPrice { get; set; }
             public string? CustomerPhone { get; set; }
@@ -76,12 +77,14 @@ namespace BookStore.Controllers
 
             if (!string.IsNullOrEmpty(orderParameter.CustomerName) ||
                 orderParameter.StartDate.HasValue ||
-                orderParameter.EndDate.HasValue)
+                orderParameter.EndDate.HasValue ||
+                orderParameter.SpecificDate.HasValue)
             {
                 filter = o =>
                     (string.IsNullOrEmpty(orderParameter.CustomerName) || o.CustomerName.Contains(orderParameter.CustomerName)) &&
                     (!orderParameter.StartDate.HasValue || o.OrderDate >= orderParameter.StartDate.Value) &&
-                    (!orderParameter.EndDate.HasValue || o.OrderDate <= orderParameter.EndDate.Value);
+                    (!orderParameter.EndDate.HasValue || o.OrderDate <= orderParameter.EndDate.Value) &&
+                    (!orderParameter.SpecificDate.HasValue || o.OrderDate.Date == orderParameter.SpecificDate.Value.Date);
             }
 
             var orders = _unitOfWork.OrderRepo.Get(
