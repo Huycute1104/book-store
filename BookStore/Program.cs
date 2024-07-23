@@ -92,7 +92,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policyBuilder =>
     {
-        policyBuilder.WithOrigins("http://localhost:3000", "http://localhost:3001")
+        policyBuilder.WithOrigins("http://localhost:3000", 
+            "http://localhost:3001", 
+            "https://fe-react-admin-book-store.vercel.app",
+            "https://fe-react-book-store.vercel.app")
                      .AllowAnyHeader()
                      .AllowAnyMethod()
                      .AllowCredentials(); // Include credentials if needed
