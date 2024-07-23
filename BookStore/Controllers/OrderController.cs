@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BookStore.Enum;
 using BookStore.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -95,6 +96,58 @@ namespace BookStore.Controllers
 
             return Ok(pagedResult);
         }
+
+        [HttpPut("{orderId}/status")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult UpdateOrderStatus(int orderId, [FromQuery] string newStatus)
+        {
+            if (string.IsNullOrEmpty(newStatus))
+            {
+                return BadRequest("New status must be provided.");
+            }
+
+            var validStatuses = new[]
+            {
+                OrderStatus.Pending.ToString(),
+                OrderStatus.Processing.ToString(),
+                OrderStatus.Shipped.ToString(),
+                OrderStatus.Delivered.ToString(),
+                OrderStatus.Cancelled.ToString()
+            };
+
+            if (!validStatuses.Contains(newStatus))
+            {
+                return BadRequest("Invalid order status value.");
+            }
+
+            var order = _unitOfWork.OrderRepo.GetById(orderId);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            if (order.OrderStatus == OrderStatus.Cancelled.ToString() || order.OrderStatus == OrderStatus.Delivered.ToString())
+            {
+                return BadRequest("Cannot update the status of cancelled or delivered orders.");
+            }
+
+            if (order.OrderStatus == OrderStatus.Processing.ToString() && newStatus == OrderStatus.Pending.ToString())
+            {
+                return BadRequest("Cannot change the status from Processing to Pending.");
+            }
+
+            if (order.OrderStatus == OrderStatus.Shipped.ToString() && newStatus == OrderStatus.Pending.ToString())
+            {
+                return BadRequest("Cannot change the status from Shipped to Pending.");
+            }
+
+            order.OrderStatus = newStatus;
+            _unitOfWork.OrderRepo.Update(order);
+            _unitOfWork.Save();
+
+            return Ok(order);
+        }
+
 
     }
 }
