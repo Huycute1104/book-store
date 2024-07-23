@@ -103,7 +103,7 @@ namespace BookStore.Controllers
         {
             if (string.IsNullOrEmpty(newStatus))
             {
-                return BadRequest("New status must be provided.");
+                return BadRequest(new { message = "New status must be provided." });
             }
 
             var validStatuses = new[]
@@ -117,36 +117,37 @@ namespace BookStore.Controllers
 
             if (!validStatuses.Contains(newStatus))
             {
-                return BadRequest("Invalid order status value.");
+                return BadRequest(new { message = "Invalid order status value." });
             }
 
             var order = _unitOfWork.OrderRepo.GetById(orderId);
             if (order == null)
             {
-                return NotFound();
+                return NotFound(new { message = $"Order with ID {orderId} not found." });
             }
 
             if (order.OrderStatus == OrderStatus.Cancelled.ToString() || order.OrderStatus == OrderStatus.Delivered.ToString())
             {
-                return BadRequest("Cannot update the status of cancelled or delivered orders.");
+                return BadRequest(new { message = "Cannot update the status of cancelled or delivered orders." });
             }
 
             if (order.OrderStatus == OrderStatus.Processing.ToString() && newStatus == OrderStatus.Pending.ToString())
             {
-                return BadRequest("Cannot change the status from Processing to Pending.");
+                return BadRequest(new { message = "Cannot change the status from Processing to Pending." });
             }
 
             if (order.OrderStatus == OrderStatus.Shipped.ToString() && newStatus == OrderStatus.Pending.ToString())
             {
-                return BadRequest("Cannot change the status from Shipped to Pending.");
+                return BadRequest(new { message = "Cannot change the status from Shipped to Pending." });
             }
 
             order.OrderStatus = newStatus;
             _unitOfWork.OrderRepo.Update(order);
             _unitOfWork.Save();
 
-            return Ok(order);
+            return Ok(new { message = "Order status updated successfully.", order });
         }
+
 
 
     }
