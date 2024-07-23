@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookStore.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Models;
@@ -13,6 +14,7 @@ namespace BookStore.Controllers
 {
     [Route("api/orders")]
     [ApiController]
+    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;
@@ -25,6 +27,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet("customer/{customerId}")]
+        [Authorize(Roles ="Customer")]
         public IActionResult GetOrdersByUserId(int customerId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
             var ordersQuery = _unitOfWork.OrderRepo.Get(
@@ -56,6 +59,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetOrders([FromQuery] OrderQueryParameters orderParameter)
         {
             Expression<Func<Order, bool>> filter = o =>
