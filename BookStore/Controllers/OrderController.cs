@@ -55,67 +55,42 @@ namespace BookStore.Controllers
             return Ok(pagedResult);
         }
 
-        public class OrderQueryParameters
-        {
-            public int PageIndex { get; set; } = 1;
-            public int PageSize { get; set; } = 10;
-
-            public int? UserId { get; set; }
-            public DateTime? StartDate { get; set; }
-            public DateTime? EndDate { get; set; }
-            public DateTime? SpecificDate { get; set; }
-            public decimal? MinPrice { get; set; }
-            public decimal? MaxPrice { get; set; }
-            public string? CustomerPhone { get; set; }
-            public string? CustomerName { get; set; }
-        }
-
         [HttpGet]
         public IActionResult GetOrders([FromQuery] OrderQueryParameters orderParameter)
         {
-            Expression<Func<Order, bool>> filter = null;
+            Expression<Func<Order, bool>> filter = o =>
+                (string.IsNullOrEmpty(orderParameter.CustomerName) || o.CustomerName.Contains(orderParameter.CustomerName)) &&
+                (string.IsNullOrEmpty(orderParameter.CustomerPhone) || o.CustomerPhone.Contains(orderParameter.CustomerPhone)) &&
+                (!orderParameter.UserId.HasValue || o.UserId == orderParameter.UserId) &&
+                (!orderParameter.MinPrice.HasValue || o.Total >= orderParameter.MinPrice) &&
+                (!orderParameter.MaxPrice.HasValue || o.Total <= orderParameter.MaxPrice) &&
+                (string.IsNullOrEmpty(orderParameter.OrderStatus) || o.OrderStatus.ToLower() == orderParameter.OrderStatus.ToLower()) &&
+                (
+                    (orderParameter.StartDate.HasValue && !orderParameter.EndDate.HasValue && o.OrderDate.Date == orderParameter.StartDate.Value.Date) ||
+                    (!orderParameter.StartDate.HasValue && orderParameter.EndDate.HasValue && o.OrderDate.Date == orderParameter.EndDate.Value.Date) ||
+                    (orderParameter.StartDate.HasValue && orderParameter.EndDate.HasValue && o.OrderDate.Date >= orderParameter.StartDate.Value.Date && o.OrderDate.Date <= orderParameter.EndDate.Value.Date) ||
+                    (!orderParameter.StartDate.HasValue && !orderParameter.EndDate.HasValue)
+                );
 
-            if (!string.IsNullOrEmpty(orderParameter.CustomerName) ||
-                orderParameter.StartDate.HasValue ||
-                orderParameter.EndDate.HasValue ||
-                orderParameter.SpecificDate.HasValue)
-            {
-                filter = o =>
-                    (string.IsNullOrEmpty(orderParameter.CustomerName) || o.CustomerName.Contains(orderParameter.CustomerName)) &&
-                    (!orderParameter.StartDate.HasValue || o.OrderDate >= orderParameter.StartDate.Value) &&
-                    (!orderParameter.EndDate.HasValue || o.OrderDate <= orderParameter.EndDate.Value) &&
-                    (!orderParameter.SpecificDate.HasValue || o.OrderDate.Date == orderParameter.SpecificDate.Value.Date);
-            }
-
-            var orders = _unitOfWork.OrderRepo.Get(
+            var ordersQuery = _unitOfWork.OrderRepo.Get(
                 filter: filter,
                 orderBy: q => q.OrderByDescending(o => o.OrderDate),
-                includeProperties: "OrderDetails,OrderDetails.Book",
-                pageIndex: orderParameter.PageIndex,
-                pageSize: orderParameter.PageSize
+                includeProperties: "OrderDetails,OrderDetails.Book,OrderDetails.Book.Images"
             );
 
-            var ordersDto = _mapper.Map<IEnumerable<OrderDto>>(orders);
+            var totalCount = ordersQuery.Count();
 
-            return Ok(ordersDto);
+            var orders = ordersQuery
+                .Skip((orderParameter.PageIndex - 1) * orderParameter.PageSize)
+                .Take(orderParameter.PageSize)
+                .ToList();
+
+            var ordersDto = _mapper.Map<List<OrderDto>>(orders);
+
+            var pagedResult = new PagedResult<OrderDto>(ordersDto, totalCount, orderParameter.PageIndex, orderParameter.PageSize);
+
+            return Ok(pagedResult);
         }
-    }
 
-    public class PagedResult<T>
-    {
-        public int CurrentPage { get; set; }
-        public int TotalPages { get; set; }
-        public int PageSize { get; set; }
-        public int TotalCount { get; set; }
-        public List<T> Items { get; set; }
-
-        public PagedResult(List<T> items, int count, int pageIndex, int pageSize)
-        {
-            TotalCount = count;
-            PageSize = pageSize;
-            CurrentPage = pageIndex;
-            TotalPages = (int)Math.Ceiling(count / (double)pageSize);
-            Items = items;
-        }
     }
 }

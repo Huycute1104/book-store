@@ -84,7 +84,8 @@ namespace BookStore.Helper
                 .ForMember(dest => dest.OrderDetails, opt => opt.MapFrom(src => src.OrderDetails));
             CreateMap<OrderDetailDto, OrderDetail>();
             CreateMap<OrderDetail, OrderDetailDto>();
-            CreateMap<Book, BookDto2>();
+            CreateMap<Book, BookDto2>()
+            .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
             CreateMap<Image, ImageDto>();
         }
     }
