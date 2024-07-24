@@ -12,13 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddCors(options =>
+builder.Services.AddCors(o =>
 {
-    options.AddPolicy("AllowAllOrigins", builder =>
+    o.AddPolicy("AllowAnyOrigin", corsPolicyBuilder =>
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        corsPolicyBuilder.SetIsOriginAllowed(x => _ = true)
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
     });
 });
 
@@ -98,20 +99,7 @@ var account = new Account(
 var cloudinary = new Cloudinary(account);
 builder.Services.AddSingleton(cloudinary);
 builder.Services.ConfigureServices(builder.Configuration);
-// Configure CORS
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policyBuilder =>
-    {
-        policyBuilder.WithOrigins("http://localhost:3000", 
-            "http://localhost:3001", 
-            "https://fe-react-admin-book-store.vercel.app",
-            "https://fe-react-book-store.vercel.app")
-                     .AllowAnyHeader()
-                     .AllowAnyMethod()
-                     .AllowCredentials(); // Include credentials if needed
-    });
-});
+
 
 var app = builder.Build();
 
@@ -123,13 +111,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseCors("AllowAllOrigins"); // Ensure this is called before UseAuthentication and UseAuthorization
-
 app.UseAuthentication();
-
 app.UseAuthorization();
-
+app.UseCors("AllowAnyOrigin");
 app.MapControllers();
 
 app.Run();

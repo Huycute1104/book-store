@@ -16,7 +16,7 @@ namespace BookStore.Controllers
 {
     [Route("api/books")]
     [ApiController]
-    [Authorize]
+   
     public class BooksController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;
@@ -31,7 +31,6 @@ namespace BookStore.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles ="Admin,Customer")]
         public IActionResult GetBooks(
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10,
@@ -74,7 +73,6 @@ namespace BookStore.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,Customer")]
         public IActionResult GetBookById(int id)
         {
             try

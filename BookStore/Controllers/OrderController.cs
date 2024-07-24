@@ -21,7 +21,6 @@ namespace BookStore.Controllers
 {
     [Route("api/orders")]
     [ApiController]
-    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IUnitOfwork _unitOfWork;
@@ -67,7 +66,7 @@ namespace BookStore.Controllers
             return Ok(pagedResult);
         }
 
-
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest orderDto)
         {
@@ -99,7 +98,10 @@ namespace BookStore.Controllers
 
             foreach (var item in orderDto.orderDetailDtos)
             {
-                var itemDetail = new ItemData("Pho", item.Quantity, (int)item.UnitPrice);              
+                var book = _unitOfWork.BookRepo.GetById(item.BookId);
+                
+
+                var itemDetail = new ItemData(book.BookName, item.Quantity, (int)item.UnitPrice);              
                 data.Add(itemDetail);
 
                 var orderDetail = new OrderDetail
@@ -114,7 +116,7 @@ namespace BookStore.Controllers
                 _unitOfWork.OrderDetailRepo.Add(orderDetail);
             }
 
-            PaymentData paymentData = new PaymentData(orderId, (int) orderDto.Total,"Thanh toan hoa don", data, "https://www.facebook.com/", "https://www.facebook.com/hailua.tamquan");
+            PaymentData paymentData = new PaymentData(orderId, (int) orderDto.Total,"Thanh toan hoa don", data, "http://localhost:3000/fail", "http://localhost:3000/success");
             Net.payOS.Types.CreatePaymentResult createPayment = await _payOS.createPaymentLink(paymentData);
 
            
