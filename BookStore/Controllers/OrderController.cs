@@ -95,7 +95,7 @@ namespace BookStore.Controllers
 
 
 
-        [Authorize]
+        /*  [Authorize]*/
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest orderDto)
         {
@@ -108,50 +108,74 @@ namespace BookStore.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var userId = User.Claims.FirstOrDefault(x => x.Type == "userId");
-            var userIDPase = int.Parse(userId.Value);
-            var orderId = new Random().Next(1, int.MaxValue); // Ensure the ID is unique as per your application logic
-            var order = new Order
+
+            // Extract token from headers
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            if (string.IsNullOrEmpty(token))
             {
-                OrderId = orderId,
-                OrderDate = orderDto.OrderDate,
-                Total = orderDto.Total,
-                UserId = userIDPase,
-                OrderStatus = "Pending",
-                CustomerName = orderDto.CustomerName,
-                CustomerPhone = orderDto.CustomerPhone,
-
-            };
-             _unitOfWork.OrderRepo.Add(order);
-            var data = new List<ItemData>();
-
-            foreach (var item in orderDto.orderDetailDtos)
-            {
-                var book = _unitOfWork.BookRepo.GetById(item.BookId);
-                
-
-                var itemDetail = new ItemData(book.BookName, item.Quantity, (int)item.UnitPrice);              
-                data.Add(itemDetail);
-
-                var orderDetail = new OrderDetail
-                {
-                    OrderId = orderId,
-                    BookId = item.BookId,
-                    UnitPrice = item.UnitPrice,
-                    Quantity = item.Quantity,
-                    Discount = 0
-                };
-
-                _unitOfWork.OrderDetailRepo.Add(orderDetail);
+                return Unauthorized("Token is missing");
             }
 
-            PaymentData paymentData = new PaymentData(orderId, (int) orderDto.Total,"Thanh toan hoa don", data, "http://localhost:3000/fail", "http://localhost:3000/success");
-            Net.payOS.Types.CreatePaymentResult createPayment = await _payOS.createPaymentLink(paymentData);
+            // Validate and parse the token
+            var tokenHandler = new JwtSecurityTokenHandler();
+            try
+            {
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "userId");
 
-           
+                if (userIdClaim == null)
+                {
+                    return Unauthorized("User ID claim is missing in the token");
+                }
 
-            return Ok( createPayment.checkoutUrl);
+                var userId = int.Parse(userIdClaim.Value);
+
+                var orderId = new Random().Next(1, int.MaxValue); // Ensure the ID is unique as per your application logic
+                var order = new Order
+                {
+                    OrderId = orderId,
+                    OrderDate = orderDto.OrderDate,
+                    Total = orderDto.Total,
+                    UserId = userId,
+                    OrderStatus = "Pending",
+                    CustomerName = orderDto.CustomerName,
+                    CustomerPhone = orderDto.CustomerPhone,
+                };
+
+                _unitOfWork.OrderRepo.Add(order);
+                var data = new List<ItemData>();
+
+                foreach (var item in orderDto.orderDetailDtos)
+                {
+                    var book = _unitOfWork.BookRepo.GetById(item.BookId);
+
+                    var itemDetail = new ItemData(book.BookName, item.Quantity, (int)item.UnitPrice);
+                    data.Add(itemDetail);
+
+                    var orderDetail = new OrderDetail
+                    {
+                        OrderId = orderId,
+                        BookId = item.BookId,
+                        UnitPrice = item.UnitPrice,
+                        Quantity = item.Quantity,
+                        Discount = 0
+                    };
+
+                    _unitOfWork.OrderDetailRepo.Add(orderDetail);
+                }
+
+                PaymentData paymentData = new PaymentData(orderId, (int)orderDto.Total, "Thanh toan hoa don", data, "http://localhost:3000/fail", "http://localhost:3000/success");
+                Net.payOS.Types.CreatePaymentResult createPayment = await _payOS.createPaymentLink(paymentData);
+
+                return Ok(createPayment.checkoutUrl);
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized($"Invalid token or error in processing: {ex.Message}");
+            }
         }
+
 
         //[HttpPost("create")]
         //public async Task<IActionResult> CreatePaymentLink(CreatePaymentLinkRequest body)

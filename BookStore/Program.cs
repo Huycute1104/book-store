@@ -12,17 +12,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddCors(o =>
+builder.Services.AddCors(options =>
 {
-    o.AddPolicy("AllowAnyOrigin", corsPolicyBuilder =>
+    options.AddPolicy("AllowSpecificOrigins", policyBuilder =>
     {
-        corsPolicyBuilder.SetIsOriginAllowed(x => _ = true)
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials();
+        policyBuilder.WithOrigins(
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "https://fe-react-book-store.vercel.app",
+            "https://fe-react-admin-book-store.vercel.app")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // Include credentials if needed
     });
 });
-
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -111,9 +114,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-//app.UseAuthentication();
+app.UseCors("AllowSpecificOrigins"); // Ensure to use the correct policy name
+app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("AllowAnyOrigin");
 app.MapControllers();
 
 app.Run();
