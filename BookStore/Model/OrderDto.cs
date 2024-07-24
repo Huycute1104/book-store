@@ -9,6 +9,6 @@
         public string OrderStatus { get; set; }
         public string CustomerName { get; set; }
         public string CustomerPhone { get; set; }
-        public List<OrderDetailDto> OrderDetails { get; set; }
+        public List<ViewOrderDetail> OrderDetails { get; set; }
     }
 }

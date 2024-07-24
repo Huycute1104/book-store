@@ -58,7 +58,7 @@ namespace BookStore.Controllers
                     od => od.OrderId == orderDto.OrderId,
                     includeProperties: "Book.Images"
                 );
-                orderDto.OrderDetails = _mapper.Map<List<OrderDetailDto>>(orderDetails);
+                orderDto.OrderDetails = _mapper.Map<List<ViewOrderDetail>>(orderDetails);
             }
 
             var pagedResult = new PagedResult<OrderDto>(orderDtos, totalCount, pageIndex, pageSize);
