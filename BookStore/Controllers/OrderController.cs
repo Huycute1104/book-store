@@ -34,12 +34,37 @@ namespace BookStore.Controllers
             _payOS = payOS;
         }
 
-        [HttpGet("customer/{customerId}")]
-        [Authorize(Roles = "Customer")]
-        public IActionResult GetOrdersByUserId(int customerId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        [HttpGet("customer")]
+        public IActionResult GetOrdersByUserId([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
+            // Lấy token từ header Authorization
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized("No token provided.");
+            }
+
+            // Giải mã token và trích xuất claims
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return Unauthorized("Invalid or missing userId claim.");
+            }
+
+            // Chuyển đổi giá trị userId sang số nguyên
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid userId claim.");
+            }
+
+            // Lấy danh sách đơn hàng của người dùng
             var ordersQuery = _unitOfWork.OrderRepo.Get(
-                filter: o => o.UserId == customerId,
+                filter: x => x.UserId == userId,
                 orderBy: q => q.OrderBy(o => o.OrderId)
             );
 
@@ -65,6 +90,10 @@ namespace BookStore.Controllers
 
             return Ok(pagedResult);
         }
+
+
+
+
 
         [Authorize]
         [HttpPost]
@@ -148,7 +177,7 @@ namespace BookStore.Controllers
 
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult GetOrders([FromQuery] OrderQueryParameters orderParameter)
         {
             Expression<Func<Order, bool>> filter = o =>
