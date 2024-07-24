@@ -5,12 +5,23 @@ using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Net.payOS;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -86,7 +97,7 @@ var account = new Account(
 );
 var cloudinary = new Cloudinary(account);
 builder.Services.AddSingleton(cloudinary);
-
+builder.Services.ConfigureServices(builder.Configuration);
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -113,7 +124,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors(); // Ensure this is called before UseAuthentication and UseAuthorization
+app.UseCors("AllowAllOrigins"); // Ensure this is called before UseAuthentication and UseAuthorization
 
 app.UseAuthentication();
 

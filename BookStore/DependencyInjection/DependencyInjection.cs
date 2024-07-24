@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Net.payOS;
 using Repository.Models;
 using Repository.UnitOfwork;
 
@@ -33,5 +34,29 @@ namespace BookStore.DependencyInjection
             var str = config["ConnectionStrings:MyDB"];
             return str;
         }
+
+        public static IServiceCollection ConfigureServices(this IServiceCollection services,IConfiguration configuration)
+        {
+            PayOS payOS = new PayOS(configuration["Environment:PAYOS_CLIENT_ID"] ?? throw new Exception("Cannot find environment"),
+                                    configuration["Environment:PAYOS_API_KEY"] ?? throw new Exception("Cannot find environment"),
+                                    configuration["Environment:PAYOS_CHECKSUM_KEY"] ?? throw new Exception("Cannot find environment"));
+            
+            services.AddSingleton(payOS);
+
+            services.AddControllersWithViews();
+
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    policy =>
+                    {
+                        policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod();
+                    });
+            });
+            return services;
+        }
+
     }
+
+
 }

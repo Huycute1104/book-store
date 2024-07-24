@@ -4,12 +4,18 @@ using BookStore.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Net.payOS;
+using Net.payOS.Types;
 using Repository.Models;
 using Repository.UnitOfwork;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace BookStore.Controllers
 {
@@ -20,15 +26,17 @@ namespace BookStore.Controllers
     {
         private readonly IUnitOfwork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly PayOS _payOS;
 
-        public OrderController(IUnitOfwork unitOfWork, IMapper mapper)
+        public OrderController(IUnitOfwork unitOfWork, IMapper mapper, PayOS payOS)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _payOS = payOS;
         }
 
         [HttpGet("customer/{customerId}")]
-        [Authorize(Roles ="Customer")]
+        [Authorize(Roles = "Customer")]
         public IActionResult GetOrdersByUserId(int customerId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
             var ordersQuery = _unitOfWork.OrderRepo.Get(
@@ -58,6 +66,84 @@ namespace BookStore.Controllers
 
             return Ok(pagedResult);
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest orderDto)
+        {
+            if (orderDto == null)
+            {
+                return BadRequest("Order data is null");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userId = User.Claims.FirstOrDefault(x => x.Type == "userId");
+            var userIDPase = int.Parse(userId.Value);
+            var orderId = new Random().Next(1, int.MaxValue); // Ensure the ID is unique as per your application logic
+            var order = new Order
+            {
+                OrderId = orderId,
+                OrderDate = orderDto.OrderDate,
+                Total = orderDto.Total,
+                UserId = userIDPase,
+                OrderStatus = "Pending",
+                CustomerName = orderDto.CustomerName,
+                CustomerPhone = orderDto.CustomerPhone,
+
+            };
+             _unitOfWork.OrderRepo.Add(order);
+            var data = new List<ItemData>();
+
+            foreach (var item in orderDto.orderDetailDtos)
+            {
+                var itemDetail = new ItemData("Pho", item.Quantity, (int)item.UnitPrice);              
+                data.Add(itemDetail);
+
+                var orderDetail = new OrderDetail
+                {
+                    OrderId = orderId,
+                    BookId = item.BookId,
+                    UnitPrice = item.UnitPrice,
+                    Quantity = item.Quantity,
+                    Discount = 0
+                };
+
+                _unitOfWork.OrderDetailRepo.Add(orderDetail);
+            }
+
+            PaymentData paymentData = new PaymentData(orderId, (int) orderDto.Total,"Thanh toan hoa don", data, "https://www.facebook.com/", "https://www.facebook.com/hailua.tamquan");
+            Net.payOS.Types.CreatePaymentResult createPayment = await _payOS.createPaymentLink(paymentData);
+
+           
+
+            return Ok( createPayment.checkoutUrl);
+        }
+
+        //[HttpPost("create")]
+        //public async Task<IActionResult> CreatePaymentLink(CreatePaymentLinkRequest body)
+        //{
+        //    try
+        //    {
+        //        int orderCode = int.Parse(DateTimeOffset.Now.ToString("ffffff"));
+        //        ItemData item = new ItemData(body.productName, 1, body.price);
+        //        List<ItemData> items = new List<ItemData>();
+        //        items.Add(item);
+        //        PaymentData paymentData = new PaymentData(orderCode, body.price, body.description, items, body.cancelUrl, body.returnUrl);
+
+        //        CreatePaymentResult createPayment = await _payOS.createPaymentLink(paymentData);
+
+        //        return Ok(new Response(0, "success", createPayment));
+        //    }
+        //    catch (System.Exception exception)
+        //    {
+        //        Console.WriteLine(exception);
+        //        return Ok(new Response(-1, "fail", null));
+        //    }
+        //}
+
 
         [HttpGet]
         [Authorize(Roles = "Admin")]

@@ -18,7 +18,6 @@ namespace Repository.UnitOfwork
         IGenericRepository<OrderDetail> OrderDetailRepo { get; set; }
         IGenericRepository<Cart> CartRepo { get; set; }
         IGenericRepository<Image> ImageRepo { get; set; }
-
         void Save();
     }
 }

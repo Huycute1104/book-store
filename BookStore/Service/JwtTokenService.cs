@@ -32,7 +32,7 @@ namespace BookStore.Service
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                    new Claim("userId", user.UserId.ToString()),
                     new Claim(ClaimTypes.Role, role),
                     new Claim(ClaimTypes.Email,user.Email)
                 }),
